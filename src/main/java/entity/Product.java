@@ -48,6 +48,10 @@ public class Product {
         return stringBuilder.toString();
     }
 
+    public List<String> getRawCategories() {
+        return categories;
+    }
+
     public void setCategories(List<String> categories) {
         this.categories = categories;
     }

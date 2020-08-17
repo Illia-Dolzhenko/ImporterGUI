@@ -77,7 +77,7 @@ public class Importer {
             throw new AppException("[ERROR] Products are not loaded.");
         }
 
-        if(catalogLocation == null){
+        if (catalogLocation == null) {
             throw new AppException("[ERROR] Catalog is not selected.");
         }
 
@@ -105,21 +105,60 @@ public class Importer {
             printer.print("[ERROR] Error occurred while saving csv file.");
             e.printStackTrace();
         }
+
+        saveCategories();
     }
 
-    public void showProducts(){
-        if(products == null){
+    public void showProducts() {
+        if (products == null) {
             return;
         }
         products.forEach(product -> printer.print(product.toString()));
         printer.print("[INFO] Number of products: " + products.size());
     }
 
-    public List<Product> getProducts(){
+    public List<Product> getProducts() {
         if (products != null) {
             return new ArrayList<>(products);
         }
         return null;
+    }
+
+    private void saveCategories() {
+
+        Set<String> categories = new HashSet<>();
+
+        products.forEach(product -> {
+            List<String> productCategories = product.getRawCategories();
+            StringBuilder category = new StringBuilder();
+            for (int i = productCategories.size() - 1; i >= 0; i--) {
+                category.append(productCategories.get(i)).append("$");
+                for (int j = i; j < productCategories.size(); j++) {
+                    category.append(productCategories.get(j).replace(" ","-").toLowerCase());
+                    if (j != productCategories.size() - 1) {
+                        category.append("-");
+                    }
+                }
+                if (i != 0) {
+                    category.append("/");
+                }
+            }
+            categories.add(category.toString());
+        });
+
+        StringBuilder result = new StringBuilder();
+
+        categories.forEach(category -> {
+            result.append(category).append(System.lineSeparator());
+        });
+
+        try {
+            Files.write(Paths.get(catalogLocation.getParent().toString() + "\\categories.txt"), result.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+            printer.print("[INFO] Txt file saved: " + catalogLocation.getParent().toString() + "\\categories.txt");
+        } catch (IOException e) {
+            printer.print("[ERROR] Error occurred while saving txt file.");
+            e.printStackTrace();
+        }
     }
 
     private void checkSKUsUnique(List<Product> products) {

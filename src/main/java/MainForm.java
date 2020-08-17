@@ -22,7 +22,7 @@ public class MainForm extends JFrame {
     private Importer importer;
 
     private MainForm() {
-        setTitle("util.Importer");
+        setTitle("Importer");
         setContentPane(panel1);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(500, 400);

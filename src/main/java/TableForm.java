@@ -13,7 +13,7 @@ public class TableForm extends JFrame {
 
 
     public TableForm(List<Product> products) {
-
+        setTitle("Product table");
         String[] header = new String[]{"Sku", "Weight", "Name", "Description", "Categories", "File"};
         String[][] values = new String[products.size()][header.length];
         int i = 0;
