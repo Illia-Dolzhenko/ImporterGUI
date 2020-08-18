@@ -1,5 +1,6 @@
 package util;
 
+import entity.AdditionalImage;
 import entity.Product;
 import exception.AppException;
 
@@ -16,6 +17,7 @@ public class Importer {
     private List<Product> products;
     private Path catalogLocation;
     private Printer printer;
+    private static final Set<String> supportedExtensions = new HashSet<>(Set.of("jpg", "png", "jpeg"));
 
     public Importer(Printer printer) {
         this.printer = printer;
@@ -83,21 +85,23 @@ public class Importer {
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Type, sku, Regular price, Attribute 1 name, Attribute 1 value(s), Categories, Name, Images, Description\n");
-        products.forEach(product -> stringBuilder
-                .append("virtual")
-                .append(",")
-                .append(product.getSKU())
-                .append(",").append(product.getWeight())
-                .append(",").append("Вес,")
-                .append(product.getWeight())
-                .append(",")
-                .append(product.getCategories())
-                .append(",")
-                .append(product.getName()).append(" (").append(product.getSKU()).append(")")
-                .append(",").append(urlPrefix).append(product.getSKU()).append(".jpg")
-                .append(",")
-                .append(product.getDescription())
-                .append("\n"));
+        products.forEach(product -> {
+            stringBuilder
+                    .append("virtual")
+                    .append(",")
+                    .append(product.getSKU())
+                    .append(",").append(product.getWeight())
+                    .append(",").append("Вес,")
+                    .append(product.getWeight())
+                    .append(",")
+                    .append(product.getCategories())
+                    .append(",")
+                    .append(product.getName()).append(" (").append(product.getSKU()).append(")")
+                    .append(",").append(urlPrefix).append(product.getSKU()).append(".").append(product.getFileExtension())
+                    .append(",")
+                    .append(product.getDescription())
+                    .append("\n");
+        });
         try {
             Files.write(Paths.get(catalogLocation.getParent().toString() + "\\products.csv"), stringBuilder.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
             printer.print("[INFO] Csv file saved: " + catalogLocation.getParent().toString() + "\\products.csv");
@@ -106,7 +110,7 @@ public class Importer {
             e.printStackTrace();
         }
 
-        saveCategories();
+        //saveCategories();
     }
 
     public void showProducts() {
@@ -134,7 +138,7 @@ public class Importer {
             for (int i = productCategories.size() - 1; i >= 0; i--) {
                 category.append(productCategories.get(i)).append("$");
                 for (int j = i; j < productCategories.size(); j++) {
-                    category.append(productCategories.get(j).replace(" ","-").toLowerCase());
+                    category.append(productCategories.get(j).replace(" ", "-").toLowerCase());
                     if (j != productCategories.size() - 1) {
                         category.append("-");
                     }
@@ -216,50 +220,80 @@ public class Importer {
                 e.printStackTrace();
             }
         }
-        Files.copy(original, Paths.get(catalogLocation.getParent().toString() + "\\images\\" + product.getSKU() + ".jpg"), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(original, Paths.get(catalogLocation.getParent().toString() + "\\images\\" + product.getSKU() + "." + product.getFileExtension()), StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private List<Product> readProducts() throws IOException {
+    private List<Product> readProducts() throws IOException, AppException {
         List<Path> files = listFilesUsingFileWalk(catalogLocation.toString());
         List<Product> products = new ArrayList<>();
+        List<AdditionalImage> additionalImages = new ArrayList<>();
         Map<String, String> names = readNames();
 
         files.forEach(file -> {
             String fileExtension = file.getFileName().toString().split("\\.")[1];
-
-            if ("jpg".equals(fileExtension.toLowerCase())) {
-                Product product = new Product();
-                List<String> categories = getAllParents(file, catalogLocation.getFileName().toString()).stream().map(path -> path.getFileName().toString()).collect(Collectors.toList());
-                List<String> info = Arrays.asList(file.getFileName().toString().split(" "));
-
-                product.setCategories(categories);
-                product.setSKU(info.get(0));
-                product.setWeight(info.get(1).replace(",", "."));
-                product.setFile(file);
-
-                StringBuilder description = new StringBuilder();
-                for (int i = 3; i < info.size(); i++) {
-                    description.append(info.get(i)).append(" ");
-                }
-
-                product.setDescription(description.toString().split("\\.")[0].trim());
-
-                if (names == null) {
-                    product.setName("Unknown");
-                } else {
-                    names.keySet().forEach(key -> {
-                        if (product.getSKU().startsWith(key)) {
-                            product.setName(names.get(key));
-                        }
-                    });
-                    if (product.getName() == null) {
-                        product.setName("Unknown");
+            if (supportedExtensions.contains(fileExtension.toLowerCase())) {
+                if (file.getFileName().toString().split(" ").length <= 1) {
+                    AdditionalImage image = new AdditionalImage();
+                    String fileName = file.getFileName().toString();
+                    image.setFile(file);
+                    if (fileName.contains("_")) {
+                        String[] info = fileName.split("_");
+                        image.setSKU(info[0]);
+//                        try {
+//                            image.setNumber(Integer.parseInt(info[1]));
+//                        } catch (NumberFormatException e) {
+//                            printer.print("[ERROR] Can't parse number value of image: " + file.toString());
+//                        }
+                    } else {
+                        image.setSKU(fileName.split("\\.")[0]);
+//                        image.setNumber(0);
                     }
+                    additionalImages.add(image);
+                } else {
+                    Product product = new Product();
+                    List<String> categories = getAllParents(file, catalogLocation.getFileName().toString()).stream().map(path -> path.getFileName().toString()).collect(Collectors.toList());
+                    List<String> info = Arrays.asList(file.getFileName().toString().split(" "));
+
+                    product.setCategories(categories);
+                    product.setSKU(info.get(0));
+                    product.setWeight(info.get(1).replace(",", "."));
+                    product.setFile(file);
+
+                    StringBuilder description = new StringBuilder();
+                    for (int i = 3; i < info.size(); i++) {
+                        description.append(info.get(i)).append(" ");
+                    }
+
+                    product.setDescription(description.toString().split("\\.")[0].trim());
+
+                    if (names == null) {
+                        product.setName("Unknown");
+                    } else {
+                        names.keySet().forEach(key -> {
+                            if (product.getSKU().startsWith(key)) {
+                                product.setName(names.get(key));
+                            }
+                        });
+                        if (product.getName() == null) {
+                            product.setName("Unknown");
+                        }
+                    }
+                    products.add(product);
                 }
-                products.add(product);
             }
         });
+        addAdditionalImagesToProducts(products, additionalImages);
         return products;
+    }
+
+    private void addAdditionalImagesToProducts(List<Product> products, List<AdditionalImage> images) {
+        products.forEach(product -> {
+            images.stream().filter(image -> image.getSKU().equals(product.getSKU())).forEach(image -> {
+                product.getAdditionalImages().add(image.getFile());
+                printer.print("[DEBUG] Added additional image (" + image.getFile().getFileName().toString() + ") to product: " + product.getSKU());
+            });
+
+        });
     }
 
     private List<Path> listFilesUsingFileWalk(String dir) throws IOException {

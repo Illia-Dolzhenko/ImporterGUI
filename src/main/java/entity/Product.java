@@ -1,7 +1,9 @@
 package entity;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Product {
     private String SKU;
@@ -10,6 +12,11 @@ public class Product {
     private String description;
     private List<String> categories;
     private Path file;
+    private List<Path> additionalImages = new ArrayList<>();
+
+    public List<Path> getAdditionalImages() {
+        return additionalImages;
+    }
 
     public String getDescription() {
         return description;
@@ -72,6 +79,10 @@ public class Product {
         this.SKU = SKU;
     }
 
+    public String getFileExtension(){
+        return file.getFileName().toString().split("\\.")[1];
+    }
+
     @Override
     public String toString() {
         return "Product{" +
@@ -89,5 +100,18 @@ public class Product {
                 ", weight='" + weight + '\'' +
                 ", file=" + file +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return SKU.equals(product.SKU);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(SKU);
     }
 }
