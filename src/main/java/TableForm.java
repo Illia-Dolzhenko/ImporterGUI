@@ -9,7 +9,7 @@ import java.util.List;
 
 public class TableForm extends JFrame {
 
-    JTable table;
+    private JTable table;
 
 
     public TableForm(List<Product> products) {
@@ -38,5 +38,4 @@ public class TableForm extends JFrame {
         setContentPane(new JScrollPane(table));
         setSize(640, 480);
     }
-
 }

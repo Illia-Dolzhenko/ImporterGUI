@@ -19,7 +19,7 @@ public class Importer {
     private Printer printer;
     private static final Set<String> supportedExtensions = new HashSet<>(Set.of("jpg", "png", "jpeg"));
 
-    public Importer(Printer printer) {
+    public Importer(PrinterGUI printer) {
         this.printer = printer;
     }
 
@@ -203,7 +203,6 @@ public class Importer {
             try {
                 Float.parseFloat(product.getWeight().trim());
             } catch (NumberFormatException e) {
-                //System.out.println("[WARN] Product has wrong weight value: " + product.lessInfo());
                 printer.print("[WARN] Product has wrong weight value: " + product.lessInfo());
             }
         });
@@ -335,5 +334,4 @@ public class Importer {
         lines.close();
         return names;
     }
-
 }

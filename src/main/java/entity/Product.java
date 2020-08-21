@@ -80,7 +80,7 @@ public class Product {
     }
 
     public String getFileExtension(){
-        return file.getFileName().toString().split("\\.")[1];
+        return file.getFileName().toString().split("\\.")[1].toLowerCase();
     }
 
     @Override
