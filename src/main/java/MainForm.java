@@ -3,9 +3,10 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import config.SettingsLoader;
 import entity.Product;
 import exception.AppException;
-import util.Importer;
-import util.PrinterGUI;
-import util.Uploader;
+import importer.Importer;
+import printer.PrinterGUI;
+import importer.Uploader;
+import util.Constants;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +14,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class MainForm extends JFrame {
     private JPanel panel1;
@@ -47,7 +51,7 @@ public class MainForm extends JFrame {
         menuBar.add(setUpInfoMenu());
         setJMenuBar(menuBar);
 
-        textFieldURL.setText(DEFAULT_URL_PREFIX);
+        //textFieldURL.setText(DEFAULT_URL_PREFIX);
 
         setVisible(true);
     }
@@ -89,6 +93,12 @@ public class MainForm extends JFrame {
                 printer.print("[INFO] Catalog folder is set to: " + importer.getCatalogLocation());
                 try {
                     settingsLoader.load(importer.getCatalogLocation());
+                    String prefix = settingsLoader.getProperties().getProperty(SettingsLoader.KEY_URL_PREFIX);
+                    if (prefix == null) {
+                        printer.print("[INFO] Url prefix is not found in settings file.");
+                    } else {
+                        textFieldURL.setText(prefix);
+                    }
                 } catch (AppException ex) {
                     showMessageDialog(ex.getMessage());
                 }
@@ -146,9 +156,9 @@ public class MainForm extends JFrame {
         buttonUpload.addActionListener(e -> {
             if (importer.getCatalogLocation() != null) {
 
-                String URL = settingsLoader.getProperties().getProperty("URL");
-                String user = settingsLoader.getProperties().getProperty("user");
-                String password = settingsLoader.getProperties().getProperty("password");
+                String URL = settingsLoader.getProperties().getProperty(SettingsLoader.KEY_FTP_URL);
+                String user = settingsLoader.getProperties().getProperty(SettingsLoader.KEY_USERNAME);
+                String password = settingsLoader.getProperties().getProperty(SettingsLoader.KEY_PASSWORD);
 
                 if (URL == null || user == null || password == null) {
                     showMessageDialog("[WARN] Some of the ftp settings are not set.");

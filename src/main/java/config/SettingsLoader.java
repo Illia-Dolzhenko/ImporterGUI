@@ -8,6 +8,11 @@ import java.util.Properties;
 
 public class SettingsLoader {
 
+    public static final String KEY_PASSWORD = "ftp_password";
+    public static final String KEY_USERNAME = "ftp_user";
+    public static final String KEY_FTP_URL = "ftp_url";
+    public static final String KEY_URL_PREFIX = "url_prefix";
+
     private Properties properties;
 
     public SettingsLoader() {

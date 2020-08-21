@@ -1,4 +1,4 @@
-package util;
+package printer;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -11,9 +11,6 @@ public class PrinterGUI implements Printer {
     public PrinterGUI(JTextPane textPane, JScrollPane scrollPane){
         this.textPane = textPane;
         this.scrollPane = scrollPane;
-//        scrollPane.getVerticalScrollBar().addAdjustmentListener(e -> {
-//            e.getAdjustable().setValue(e.getAdjustable().getMaximum());
-//        });
     }
 
     public void print(String text){

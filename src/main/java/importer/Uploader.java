@@ -1,10 +1,12 @@
-package util;
+package importer;
 
+import listener.DoneListener;
 import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import printer.Printer;
 
 import javax.swing.*;
 import java.io.*;

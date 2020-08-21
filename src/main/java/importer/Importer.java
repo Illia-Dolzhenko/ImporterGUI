@@ -1,8 +1,10 @@
-package util;
+package importer;
 
 import entity.AdditionalImage;
 import entity.Product;
 import exception.AppException;
+import printer.Printer;
+import printer.PrinterGUI;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
